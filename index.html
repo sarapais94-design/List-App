@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prototype organisation TDAH</title>
+  <style>
+    :root {
+      --bg: #f7f8fc;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #4f46e5;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --info: #3b82f6;
+      --later: #9ca3af;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+    }
+
+    .app {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"], select {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 1rem;
+      background: white;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+
+    button.secondary {
+      background: #eef2ff;
+      color: var(--accent);
+    }
+
+    button.ghost {
+      background: #f3f4f6;
+      color: var(--text);
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .task-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .task {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .task-text {
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .task-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .urgent { background: #fee2e2; color: #b91c1c; }
+    .important { background: #fef3c7; color: #92400e; }
+    .quick { background: #dcfce7; color: #166534; }
+    .focus { background: #dbeafe; color: #1d4ed8; }
+    .later { background: #f3f4f6; color: #4b5563; }
+
+    .status-row, .actions-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-chip {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .status-chip.active {
+      border-color: var(--accent);
+      background: #eef2ff;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .small {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .today-box {
+      background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .summary .mini {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .empty {
+      padding: 14px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 12px; }
+      .card { padding: 14px; }
+      button, input, select { width: 100%; }
+      .row > * { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <h1>Organisation douce</h1>
+      <p class="subtitle">Prototype simple pour tout noter sans se sentir submergé·e.</p>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h2>Ajouter une tâche</h2>
+      </div>
+      <div class="row">
+        <input id="taskInput" type="text" placeholder="Ex. appeler l'assurance, envoyer un CV..." />
+        <select id="tagSelect">
+          <option value="urgent">🔴 Urgent</option>
+          <option value="important">🟡 Important</option>
+          <option value="quick">🟢 Rapide</option>
+          <option value="focus">🔵 Demande concentration</option>
+          <option value="later">⚪ Plus tard</option>
+        </select>
+        <button id="addTaskBtn">Ajouter</button>
+      </div>
+      <p class="small">Idée : tout noter vite d’abord, décider ensuite.</p>
+    </div>
+
+    <div class="card today-box">
+      <div class="section-title">
+        <h2>Mes 3 priorités du jour</h2>
+        <button class="secondary" id="autoPickBtn">Choisir automatiquement</button>
+      </div>
+      <div id="todayList" class="task-list"></div>
+      <p class="small">Le reste existe toujours, mais n’a pas besoin d’être visible tout de suite.</p>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h2>Toutes les tâches</h2>
+      </div>
+      <div id="allTasks" class="task-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h2>Fin de journée</h2>
+      </div>
+      <div class="summary" id="summary"></div>
+      <p id="encouragement" class="small"></p>
+    </div>
+  </div>
+
+  <script>
+    const defaultTasks = [
+      { id: crypto.randomUUID(), text: 'Envoyer un CV', tag: 'important', inToday: true, status: 'todo' },
+      { id: crypto.randomUUID(), text: 'Appeler le médecin', tag: 'urgent', inToday: true, status: 'started' },
+      { id: crypto.randomUUID(), text: 'Faire une lessive', tag: 'quick', inToday: false, status: 'todo' },
+      { id: crypto.randomUUID(), text: 'Ranger les papiers 10 min', tag: 'focus', inToday: true, status: 'todo' },
+      { id: crypto.randomUUID(), text: 'Répondre au mail CAF', tag: 'later', inToday: false, status: 'todo' }
+    ];
+
+    let tasks = JSON.parse(localStorage.getItem('tdah-prototype-tasks')) || defaultTasks;
+
+    const taskInput = document.getElementById('taskInput');
+    const tagSelect = document.getElementById('tagSelect');
+    const addTaskBtn = document.getElementById('addTaskBtn');
+    const allTasksEl = document.getElementById('allTasks');
+    const todayListEl = document.getElementById('todayList');
+    const summaryEl = document.getElementById('summary');
+    const encouragementEl = document.getElementById('encouragement');
+    const autoPickBtn = document.getElementById('autoPickBtn');
+
+    const tagConfig = {
+      urgent: { label: '🔴 Urgent', className: 'urgent', rank: 1 },
+      important: { label: '🟡 Important', className: 'important', rank: 2 },
+      quick: { label: '🟢 Rapide', className: 'quick', rank: 3 },
+      focus: { label: '🔵 Concentration', className: 'focus', rank: 4 },
+      later: { label: '⚪ Plus tard', className: 'later', rank: 5 }
+    };
+
+    const statuses = [
+      { key: 'todo', label: '⬜ À faire' },
+      { key: 'done', label: '✅ Fait' },
+      { key: 'started', label: '🟨 Commencé' },
+      { key: 'moved', label: '➡️ Reporté' },
+      { key: 'cancelled', label: '❌ Annulé' }
+    ];
+
+    function save() {
+      localStorage.setItem('tdah-prototype-tasks', JSON.stringify(tasks));
+    }
+
+    function addTask() {
+      const text = taskInput.value.trim();
+      if (!text) return;
+
+      tasks.unshift({
+        id: crypto.randomUUID(),
+        text,
+        tag: tagSelect.value,
+        inToday: false,
+        status: 'todo'
+      });
+
+      taskInput.value = '';
+      save();
+      render();
+    }
+
+    function removeTask(id) {
+      tasks = tasks.filter(task => task.id !== id);
+      save();
+      render();
+    }
+
+    function toggleToday(id) {
+      const todayCount = tasks.filter(t => t.inToday).length;
+      tasks = tasks.map(task => {
+        if (task.id !== id) return task;
+        if (!task.inToday && todayCount >= 3) return task;
+        return { ...task, inToday: !task.inToday };
+      });
+      save();
+      render();
+    }
+
+    function setStatus(id, status) {
+      tasks = tasks.map(task => task.id === id ? { ...task, status } : task);
+      save();
+      render();
+    }
+
+    function autoPickToday() {
+      tasks = tasks.map(task => ({ ...task, inToday: false }));
+      const sorted = [...tasks]
+        .filter(task => task.status !== 'done' && task.status !== 'cancelled')
+        .sort((a, b) => tagConfig[a.tag].rank - tagConfig[b.tag].rank)
+        .slice(0, 3)
+        .map(t => t.id);
+
+      tasks = tasks.map(task => ({ ...task, inToday: sorted.includes(task.id) }));
+      save();
+      render();
+    }
+
+    function createStatusRow(task) {
+      const row = document.createElement('div');
+      row.className = 'status-row';
+
+      statuses.forEach(status => {
+        const chip = document.createElement('button');
+        chip.className = 'status-chip' + (task.status === status.key ? ' active' : '');
+        chip.textContent = status.label;
+        chip.addEventListener('click', () => setStatus(task.id, status.key));
+        row.appendChild(chip);
+      });
+
+      return row;
+    }
+
+    function createTaskCard(task, inTodaySection = false) {
+      const card = document.createElement('div');
+      card.className = 'task';
+
+      const top = document.createElement('div');
+      top.className = 'task-top';
+
+      const left = document.createElement('div');
+      const text = document.createElement('div');
+      text.className = 'task-text';
+      text.textContent = task.text;
+
+      const meta = document.createElement('div');
+      meta.className = 'task-meta';
+
+      const badge = document.createElement('span');
+      badge.className = `badge ${tagConfig[task.tag].className}`;
+      badge.textContent = tagConfig[task.tag].label;
+      meta.appendChild(badge);
+
+      left.appendChild(text);
+      left.appendChild(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions-row';
+
+      const todayBtn = document.createElement('button');
+      todayBtn.className = 'ghost';
+      todayBtn.textContent = task.inToday ? 'Retirer du jour' : 'Mettre dans le jour';
+      todayBtn.addEventListener('click', () => toggleToday(task.id));
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'ghost';
+      deleteBtn.textContent = 'Supprimer';
+      deleteBtn.addEventListener('click', () => removeTask(task.id));
+
+      actions.appendChild(todayBtn);
+      if (!inTodaySection) actions.appendChild(deleteBtn);
+
+      top.appendChild(left);
+      top.appendChild(actions);
+
+      card.appendChild(top);
+      card.appendChild(createStatusRow(task));
+
+      return card;
+    }
+
+    function renderToday() {
+      todayListEl.innerHTML = '';
+      const todayTasks = tasks.filter(task => task.inToday).slice(0, 3);
+
+      if (!todayTasks.length) {
+        todayListEl.innerHTML = '<div class="empty">Aucune priorité choisie pour le moment. Vous pouvez en sélectionner jusqu’à 3.</div>';
+        return;
+      }
+
+      todayTasks.forEach(task => todayListEl.appendChild(createTaskCard(task, true)));
+    }
+
+    function renderAllTasks() {
+      allTasksEl.innerHTML = '';
+      if (!tasks.length) {
+        allTasksEl.innerHTML = '<div class="empty">Aucune tâche pour le moment.</div>';
+        return;
+      }
+      tasks.forEach(task => allTasksEl.appendChild(createTaskCard(task)));
+    }
+
+    function renderSummary() {
+      const counts = {
+        done: tasks.filter(t => t.status === 'done').length,
+        started: tasks.filter(t => t.status === 'started').length,
+        moved: tasks.filter(t => t.status === 'moved').length,
+        cancelled: tasks.filter(t => t.status === 'cancelled').length,
+      };
+
+      summaryEl.innerHTML = `
+        <div class="mini"><strong>${counts.done}</strong><br>✅ faites</div>
+        <div class="mini"><strong>${counts.started}</strong><br>🟨 commencées</div>
+        <div class="mini"><strong>${counts.moved}</strong><br>➡️ reportées</div>
+        <div class="mini"><strong>${counts.cancelled}</strong><br>❌ annulées</div>
+      `;
+
+      if (counts.done > 0 || counts.started > 0) {
+        encouragementEl.textContent = 'Vous avez avancé aujourd’hui. Même un petit pas compte.';
+      } else if (counts.moved > 0) {
+        encouragementEl.textContent = 'Reporter n’est pas échouer. Cela peut être une décision utile.';
+      } else {
+        encouragementEl.textContent = 'Le but est d’aider à choisir et à respirer, pas de tout faire parfaitement.';
+      }
+    }
+
+    function render() {
+      renderToday();
+      renderAllTasks();
+      renderSummary();
+    }
+
+    addTaskBtn.addEventListener('click', addTask);
+    taskInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addTask();
+    });
+    autoPickBtn.addEventListener('click', autoPickToday);
+
+    render();
+  </script>
+</body>
+</html>
